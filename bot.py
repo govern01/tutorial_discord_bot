@@ -14,6 +14,11 @@ bot = commands.Bot(command_prefix=bot_cfg['command_prefix'])
 # The chat_logger object
 chat_logger = None
 
+# A list for holding our cogs, note this stores them as extensions
+extensions = [
+    "cogs.admin"
+]
+
 
 @bot.event
 async def on_ready():
@@ -68,5 +73,8 @@ async def on_message(message):
 
 
 if __name__ == "__main__":
+    # Load Cogs via extensions, this searches for a setup function in the extended module
+    for extension in extensions:
+        bot.load_extension(extension)
     # The line of code that starts the bot thread, it should be noted that any code after this will not be executed
     bot.run(bot_cfg['token'])
