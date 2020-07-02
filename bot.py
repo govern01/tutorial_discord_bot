@@ -1,6 +1,7 @@
 from datetime import datetime
 from configparser import ConfigParser
 from discord.ext import commands
+import logger_factory
 
 # Tool to read ini files easier
 cfg = ConfigParser()
@@ -9,6 +10,9 @@ bot_cfg = cfg['BOT']
 
 # Creates a bot object to pass commands, checks, cogs and anything else into
 bot = commands.Bot(command_prefix=bot_cfg['command_prefix'])
+
+# The chat_logger object
+chat_logger = None
 
 
 @bot.event
@@ -19,8 +23,11 @@ async def on_ready():
     what you put in here). If you also want to rewrite the generated help command you would drop it here.
     In this tutorial we are going to use this to handle chat logging.
     """
+    global chat_logger
+    chat_logger = logger_factory.generate_logger()
     cur = datetime.now()
     print(f"[{cur.strftime('%H:%M:%S')}] Bot is ready")
+    chat_logger.info("Bot is ready")
 
 
 @bot.command(name="ping")
@@ -53,7 +60,10 @@ async def on_message(message):
 
     :param message: The Message object of the message sent
     """
-    print(f"{message.author}: {message.content}")
+    if message.author.id == bot.user.id:
+        return
+    global chat_logger
+    chat_logger.info(f"{message.author}: {message.content}")
     await bot.process_commands(message)
 
 
