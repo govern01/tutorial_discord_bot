@@ -1,4 +1,5 @@
 from discord.ext import commands
+from checks.identities import is_owner
 import discord
 
 """===IMPORTANT NOTE===
@@ -29,7 +30,9 @@ class AdminCog(commands.Cog, name="Admin"):
 
         A command group or super command. The decorator involves invoke_without_command as that extends to the use of
         sub commands, such that the super command is not run alongside a sub command.
+        Checks are added with the @commands.check decorator
     """
+    @commands.check(is_owner)
     @commands.group(name="admin_role", invoke_without_command=False)
     async def admin_role(self, ctx):
         # Check if role exists, if not add it and set owner as admin
@@ -78,6 +81,13 @@ class AdminCog(commands.Cog, name="Admin"):
             new_user_rolls.remove(role_admin)
         await user.edit(roles=new_user_rolls)
         await ctx.send(f"{user.display_name} removed from admins, what a pleb!")
+
+    # Some basic checks can be added with a decorator, here's a list:
+    # https://gist.github.com/Painezor/eb2519022cd2c907b56624105f94b190
+    @commands.has_role("admin")
+    @commands.command(name="purge")
+    async def purge(self, ctx, n=5):
+        await ctx.channel.purge(limit=n)
 
 
 def setup(bot):
