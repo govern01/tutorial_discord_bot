@@ -1,4 +1,5 @@
 from discord.ext import commands
+import discord
 
 """===IMPORTANT NOTE===
 
@@ -29,23 +30,54 @@ class AdminCog(commands.Cog, name="Admin"):
         A command group or super command. The decorator involves invoke_without_command as that extends to the use of
         sub commands, such that the super command is not run alongside a sub command.
     """
-    @commands.group(name="admin_role", invoke_without_command=True)
+    @commands.group(name="admin_role", invoke_without_command=False)
     async def admin_role(self, ctx):
-        await ctx.channel.send("Add/Remove an admin.")
+        # Check if role exists, if not add it and set owner as admin
+        server = ctx.guild
+        if not any("admin" == role.name for role in server.roles):
+            """
+            Important things to note when working with roles
+            
+            - Roles work in a hierarchy, a role would only be able to edit roles underneath it
+              - This also means that a bot can't move a role above it
+              - Thus the below snippet would only work if the bot's role was the first role
+            - The edit function also has access to permissions, colour and mentions. Check the docs for more info
+              - Do note there are two types of Permissions data classes
+            """
+            pos = len(server.roles) - 1
+            role = await server.create_role(name="admin", reason="Auto created to fill admin cog methods")
+            await role.edit(position=pos)
+            await server.owner.add_roles(role, reason="Adding owner as admin")
 
     """A sub command of the admin_role group
 
         This is a sub command of the admin_role group, note that the decorator begins with the super command, but
-        otherwise follows standard command decorator rules and nomenclature. Also note that the name param will act
-        like a required argument.
+        otherwise follows standard command decorator rules and nomenclature. Also note that the user param will act
+        like a required argument. The type hinting on user will also attempt to convert the argument supplied into a
+        discord.Member class, this requires the argument to be a user.
     """
     @admin_role.command(name="add")
-    async def role_add(self, ctx, name):
-        await ctx.send(f"{name} added as an Admin!!")
+    async def role_add(self, ctx, user: discord.Member):
+        # Add user to role
+        old_user_roles = user.roles
+        server_rolls = ctx.guild.roles
+        role_admin = discord.utils.get(server_rolls, name="admin")
+        new_user_rolls = old_user_roles
+        new_user_rolls.append(role_admin)
+        await user.edit(roles=new_user_rolls)
+        await ctx.send(f"{user.display_name} added as an Admin!!")
 
     @admin_role.command(name="remove")
-    async def role_rem(self, ctx, name):
-        await ctx.send(f"{name} removed from admins, what a pleb!")
+    async def role_rem(self, ctx, user: discord.Member):
+        # Remove user from a role
+        old_user_roles = user.roles
+        server_rolls = ctx.guild.roles
+        role_admin = discord.utils.get(server_rolls, name="admin")
+        new_user_rolls = old_user_roles
+        if role_admin in new_user_rolls:
+            new_user_rolls.remove(role_admin)
+        await user.edit(roles=new_user_rolls)
+        await ctx.send(f"{user.display_name} removed from admins, what a pleb!")
 
 
 def setup(bot):
