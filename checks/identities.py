@@ -9,6 +9,8 @@ passed.
 """
 
 
+# Error classes should extend the CheckFailure class in order to be handled, this is only if the error would occur in a
+# check
 class NotGuild(commands.CheckFailure):
     pass
 
@@ -17,6 +19,7 @@ class NotOwner(commands.CheckFailure):
     pass
 
 
+# We changed the return False to raise errors as that way we can tell the user why the command didn't run
 def is_owner(ctx):
     if ctx.guild is None:
         raise NotGuild("This aint a guild")

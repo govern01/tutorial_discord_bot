@@ -83,6 +83,10 @@ class AdminCog(commands.Cog, name="Admin"):
         await user.edit(roles=new_user_rolls)
         await ctx.send(f"{user.display_name} removed from admins, what a pleb!")
 
+    """
+        Command specific errors are created using the decorator @{command}.error, this is not error specific and any
+        error can be picked up. In this instance we only account for two possible errors.
+    """
     @admin_role.error
     async def admin_role_error(self, ctx, error):
         if isinstance(error, checks.identities.NotOwner):

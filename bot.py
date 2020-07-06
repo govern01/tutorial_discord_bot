@@ -46,7 +46,7 @@ async def ping(ctx):
     For more details on command decorators:
     https://discordpy.readthedocs.io/en/latest/ext/commands/api.html?highlight=command#discord.ext.commands.Command
 
-    :param ctx: context, it would be a Message Object
+    :param ctx: context, it would be a Context Object
     """
     await ctx.send('pong')
 
@@ -74,6 +74,13 @@ async def on_message(message):
 
 @bot.event
 async def on_command_error(ctx, error):
+    """
+    A general event handler, this picks up errors from the bot class that an individual error handler cannot. This could
+    also be used to handle an error that exists across multiple commands, for example a MissingRole error.
+    In general we ignore command not available.
+    :param ctx: The context object that caused the error
+    :param error: The error itself
+    """
     print(f"Error {error} happened")
 
 
