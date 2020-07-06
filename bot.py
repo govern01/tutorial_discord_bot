@@ -72,6 +72,11 @@ async def on_message(message):
     await bot.process_commands(message)
 
 
+@bot.event
+async def on_command_error(ctx, error):
+    print(f"Error {error} happened")
+
+
 if __name__ == "__main__":
     # Load Cogs via extensions, this searches for a setup function in the extended module
     for extension in extensions:

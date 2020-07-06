@@ -1,4 +1,5 @@
 from discord.ext import commands
+import checks.identities
 from checks.identities import is_owner
 import discord
 
@@ -60,7 +61,7 @@ class AdminCog(commands.Cog, name="Admin"):
         discord.Member class, this requires the argument to be a user.
     """
     @admin_role.command(name="add")
-    async def role_add(self, ctx, user: discord.Member):
+    async def admin_role_add(self, ctx, user: discord.Member):
         # Add user to role
         old_user_roles = user.roles
         server_rolls = ctx.guild.roles
@@ -71,7 +72,7 @@ class AdminCog(commands.Cog, name="Admin"):
         await ctx.send(f"{user.display_name} added as an Admin!!")
 
     @admin_role.command(name="remove")
-    async def role_rem(self, ctx, user: discord.Member):
+    async def admin_role_rem(self, ctx, user: discord.Member):
         # Remove user from a role
         old_user_roles = user.roles
         server_rolls = ctx.guild.roles
@@ -82,12 +83,24 @@ class AdminCog(commands.Cog, name="Admin"):
         await user.edit(roles=new_user_rolls)
         await ctx.send(f"{user.display_name} removed from admins, what a pleb!")
 
+    @admin_role.error
+    async def admin_role_error(self, ctx, error):
+        if isinstance(error, checks.identities.NotOwner):
+            await ctx.channel.send("This is an owner only command")
+        if isinstance(error, checks.identities.NotGuild):
+            await ctx.channel.send("This is a private message, not a server")
+
     # Some basic checks can be added with a decorator, here's a list:
     # https://gist.github.com/Painezor/eb2519022cd2c907b56624105f94b190
     @commands.has_role("admin")
     @commands.command(name="purge")
     async def purge(self, ctx, n=5):
         await ctx.channel.purge(limit=n)
+
+    @purge.error
+    async def purge_error(self, ctx, error):
+        if isinstance(error, commands.MissingRole):
+            await ctx.send("You do not have permission")
 
 
 def setup(bot):
