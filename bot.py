@@ -16,7 +16,8 @@ chat_logger = None
 
 # A list for holding our cogs, note this stores them as extensions
 extensions = [
-    "cogs.admin"
+    "cogs.admin",
+    "cogs.voice"
 ]
 
 
